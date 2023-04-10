@@ -8,7 +8,7 @@ class PinPong(pygame.Rect):
         self.SPEED = speed
 
 class Desk_player(PinPong):
-    def __init__(self,x,y,width,height,speed):
+    def __init__(self,x,y,width,height,speed,image):
         super().__init__(x,y,width,height,speed,image)
         self.MOVE = {"UP": False, "DOWN": False}
     
