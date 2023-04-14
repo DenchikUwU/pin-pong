@@ -8,10 +8,15 @@ setting_win = {
 }
 
 setting_desk_player = {
-    "WIDTH": 175,
+    "WIDTH": 20,
     "HEIGHT": 150,
     "SPEED": 2.5
 }
 
-desk_player_image = pygame.image.load("blue_desk.png")
+setting_ball = {
+    "RADIUS": 15
+}
+
+desk_player_left_image = pygame.image.load("blue_desk.png")
+desk_player_right_image = pygame.image.load("red_desk.png")
 fon_image = pygame.image.load("fon.png")
