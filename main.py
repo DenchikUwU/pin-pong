@@ -24,7 +24,8 @@ def run():
             pygame.draw.circle(window, (255,255,255), (ball.X ,ball.Y), ball.RADIUS)
             desk_player_left.move()
             desk_player_right.move()
-            ball.move(desk_player_left, desk_player_right)
+            ball.move(desk_player_left, desk_player_right, window)
+            ball.POINT.blit_point(window)
             
             for event in events:
                 if event.type == pygame.QUIT:

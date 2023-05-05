@@ -2,6 +2,7 @@ import pygame
 import data
 import random
 import json
+import time
 
 class PinPong(pygame.Rect):
     def __init__(self,x,y,width,height,speed,image):
@@ -20,15 +21,29 @@ class Desk_player(PinPong):
         elif self.MOVE["DOWN"] and self.y < data.setting_win["HEIGHT"] - self.height:
             self.y += self.SPEED
         
+class Point():
+    def __init__(self,name_left,name_right):
+        self.NAME_LEFT = name_left
+        self.NAME_RIGHT = name_right
+        self.LEFT_POINT = 0
+        self.RIGHT_POINT = 0
+        self.FONT = pygame.font.Font(None,40)
+
+    def blit_point(self, window):
+        window.blit(self.FONT.render(f"{self.LEFT_POINT} : {self.RIGHT_POINT}", True, (200,255,255)), (data.setting_win["WIDTH"] // 2 - 50, 10))
+
 class Ball():
     def __init__(self,x,y,radius,image=None, speed= 6):
         self.X = x
         self.Y = y
         self.RADIUS = radius
+        self.RECT = pygame.Rect(x - radius, y - radius, (radius ** 2 + radius ** 2) ** 0.5, (radius ** 2 + radius ** 2) ** 0.5)
         self.IMAGE = image
         self.CONST = speed
         self.SPEED = random.choice([-speed, speed])
         self.ANGLE = 0
+        self.POINT = Point("left", "right")
+        self.a = {-1}
     
     def make_angle(self, ang):
         if self.SPEED < 0:
@@ -41,14 +56,33 @@ class Ball():
         self.SPEED *= coff
 
     def restart(self, desk_player_left, desk_player_right, window):
-        if self.POINT.LEFT_POINT ==11 or self.POINT.RIGHT_POINT:
-            history[str(time.time())] ={self.POINT.NAME_LEFT: self.POINT.LEFT_POINT, self.POINT.NAME_RIGHT: self.POINT.RIGHT_POINT}
+        if self.POINT.LEFT_POINT == 1 or self.POINT.RIGHT_POINT == 1:
+            data.history[str(time.time())] ={self.POINT.NAME_LEFT: self.POINT.LEFT_POINT, self.POINT.NAME_RIGHT: self.POINT.RIGHT_POINT}
             with open("history.json", "w", encoding= "utf-8") as file:
-                json.dump(history, file, indent= 4)
+                json.dump(data.history, file, indent= 4)
 
         self.SPEED = random.choice([-self.CONST, self.CONST])
+        self.ANGLE = 0
+        self.X , self.Y = data.restart["RESTART_BALL"]
+        self.RECT.center = data.restart["RESTART_BALL"]
+        desk_player_left.y = data.restart["RESTART_DESK_LEFT"][1]
+        desk_player_right.y = data.restart["RESTART_DESK_RIGHT"][1]
+        window.blit(data.fon_image, (0,0))
+        window.blit(desk_player_left.IMAGE, (desk_player_left.x, desk_player_left.y))
+        window.blit(desk_player_right.IMAGE, (desk_player_right.x, desk_player_right.y))
+        pygame.draw.circle(window, (255,255,255), self.RECT.center, self.RADIUS)
+        self.POINT.blit_point(window)
+        pygame.display.flip()
+        time.sleep(2)
 
-    def move(self, desk_player_left, desk_player_right):
+    def move(self, desk_player_left, desk_player_right, window):
+        if self.X - self.RADIUS <= 0:
+            self.POINT.RIGHT_POINT += 1
+            self.restart(desk_player_left, desk_player_right, window)
+        elif self.X + self.RADIUS >= data.setting_win["WIDTH"]:
+            self.POINT.LEFT_POINT += 1
+            self.restart(desk_player_left, desk_player_right, window)
+        
         if self.Y - self.RADIUS <= 0 or self.Y + self.RADIUS >= data.setting_win["HEIGHT"]:
             self.ANGLE *= -1
         elif desk_player_left.collidepoint(self.X - self.RADIUS, self.Y):
@@ -69,7 +103,10 @@ class Ball():
                 self.make_angle(1)
 
         self.Y += self.ANGLE
+        self.RECT.y = self.Y
         self.X += self.SPEED
+        self.RECT.x = self.X
+        self.a.add((self.SPEED ** 2 + self.ANGLE ** 2) ** 0.5)
 
 class Menu():
     def __init__(self,width,height,count):
@@ -101,8 +138,13 @@ class Menu():
         window.fill((255,255,200))
         font = pygame.font.Font(None, 25)
         y = 10
-        for key in history.keys():
-            window.blit(font.render(f"{key}    -    {history[key]}", True, (0,0,0)), (10, y))
+        x = 50
+        for key_main in data.history.keys():
+            window.blit(font.render(f"-", True, (0,0,0)), (225, y))
+            for key, value in zip(data.history[key_main].keys(), data.history[key_main].values()):
+                window.blit(font.render(f"{key} : {value}", True, (0,0,0)), (x,y))
+                x += 300
+            x = 50
             y += 50
 
 
